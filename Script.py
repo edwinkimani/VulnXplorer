@@ -100,8 +100,13 @@ def main_menu():
 
 def validate_url(url):
     """Validate the target URL."""
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    })
+
     try:
-        response = requests.get(url, timeout=5)
+        response = session.get(url, timeout=10)
         if response.status_code == 200:
             print(Fore.GREEN + f"[+] URL is valid: {url}" + Style.RESET_ALL)
             return response
@@ -145,7 +150,6 @@ def detect_os(response):
         print(Fore.YELLOW + "[-] Unable to detect server OS." + Style.RESET_ALL)
         return 'unknown'
 
-
 def test_sql_injection(url):
     """Test for SQL Injection vulnerabilities using payloads from a file."""
     findings = []
@@ -172,9 +176,24 @@ def test_sql_injection(url):
         print(Fore.RED + "[-] No query parameters detected in the URL. Cannot test for SQL injection." + Style.RESET_ALL)
         return findings
 
+    # SQL error signatures to look for
+    sql_error_signatures = [
+        "syntax error", "mysql", "sql", "query failed", "unclosed quotation mark",
+        "oracle", "native client", "unexpected error", "database error",
+        "warning: pg_", "postgresql", "sqlite", "mssql"
+    ]
+
+    # Initialize a counter for vulnerabilities found
+    vulnerability_count = 0
+    max_vulnerabilities = 10
+
     # Loop through query parameters and test with each payload
     for param in query_params:
         for payload in payloads:
+            if vulnerability_count >= max_vulnerabilities:
+                print(Fore.GREEN + f"[!] Maximum vulnerability limit ({max_vulnerabilities}) reached. Exiting." + Style.RESET_ALL)
+                return findings
+
             # Inject payload into the current parameter
             test_params = query_params.copy()
             test_params[param] = payload
@@ -188,10 +207,15 @@ def test_sql_injection(url):
 
                 if response.status_code == 200:
                     # Check for error messages indicating SQL issues
-                    if "syntax error" in response.text.lower() or "mysql" in response.text.lower():
-                        finding = f"[!] Possible SQL Injection vulnerability in parameter '{param}' with payload: {payload}"
-                        print(Fore.GREEN + finding + Style.RESET_ALL)
-                        findings.append(finding)
+                    for signature in sql_error_signatures:
+                        if signature.lower() in response.text.lower():
+                            finding = (f"[!] Possible SQL Injection vulnerability detected: "
+                                       f"Parameter: '{param}', Payload: '{payload}', "
+                                       f"Error signature: '{signature}'")
+                            print(Fore.GREEN + finding + Style.RESET_ALL)
+                            findings.append(finding)
+                            vulnerability_count += 1
+                            break
                     else:
                         print(Fore.YELLOW + f"[-] No vulnerability detected with payload: {payload}" + Style.RESET_ALL)
                 else:
