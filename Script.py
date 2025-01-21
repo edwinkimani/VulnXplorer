@@ -7,7 +7,7 @@ from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 def display_banner():
     banner_text = pyfiglet.figlet_format("VulnXplorer")
     print(Fore.CYAN + banner_text + Style.RESET_ALL)
-    print(Fore.GREEN + "Created by: Evans Koech Salim".center(80) + Style.RESET_ALL)
+    print(Fore.GREEN + "Created by: Edwin ngila kyalo".center(80) + Style.RESET_ALL)
     print(Fore.YELLOW + "Version: 1.1.0".center(80) + Style.RESET_ALL)
     print(Fore.MAGENTA + "=" * 80 + Style.RESET_ALL)
 
