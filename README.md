@@ -4,7 +4,12 @@
 
 ## Screenshots
 
-![App Screenshot](images/vulxplora.png)
+![App Screenshot](images/firstpage.png)
+![App Screenshot](images/SQLInjection.png)
+![App Screenshot](images/XSS.png)
+![App Screenshot](images/XSS.png)
+![App Screenshot](images/HeaderAnalysis.png)
+![App Screenshot](images/commonFiles.png)
 
 # VulnXplorer
 
